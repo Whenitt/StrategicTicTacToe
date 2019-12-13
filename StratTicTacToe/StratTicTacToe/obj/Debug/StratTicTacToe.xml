@@ -1,0 +1,77 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+StratTicTacToe
+</name>
+</assembly>
+<members>
+<member name="T:StratTicTacToe.My.Resources.Resources">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:StratTicTacToe.My.Resources.Resources.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:StratTicTacToe.My.Resources.Resources.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="M:StratTicTacToe.Game.ClearAll">
+ <summary>
+ set all boards to empty, allow players to click on any tile, and set the player to "X"
+ 0=empty,1=x,2=0
+ </summary>
+</member>
+<member name="M:StratTicTacToe.Game.CheckWin(System.Int16[0:,0:])">
+ <summary>
+ checks if a player has won on the inputed game and is to be run after every turn
+ Returns 0 if no winner, 1 if winner, 2 if tie
+ </summary>
+ <param name="game"></param>
+ <returns>Returns True if the game of Tic-Tac-Toe is won, False otherwise</returns>
+</member>
+<member name="M:StratTicTacToe.Game.ChangePlayer">
+ <summary>
+ changes information to identify which player's turn it is
+ </summary>
+</member>
+<member name="M:StratTicTacToe.Game.ChangeKey(System.Int16,System.Int16)">
+ <summary>
+ changes clickKey to give access to certain tiles
+ clickKey is coordinates of the game on the bigBoard
+ </summary>
+ <param name="gameNumV">Vertical coordinate for the game being redirected to</param>
+ <param name="gameNumH">Horizontal coordinate for the game being redirected to</param>
+</member>
+<member name="M:StratTicTacToe.Game.ClearHighlights">
+ <summary>
+ Clears  highlights on all game
+ </summary>
+</member>
+<member name="M:StratTicTacToe.Game.DisplayHighlight(System.Int32,System.Int32)">
+ <summary>
+ Displays highlights for specified game
+ </summary>
+ <param name="gameNumV">Vertical coordinate of game being highlighted</param>
+ <param name="gameNumH">Horizontal coordinate of game being highlighted</param>
+</member>
+<member name="M:StratTicTacToe.Game.TileClick(System.Windows.Forms.Label,System.Int16[0:,0:],System.Int16,System.Int16,System.Windows.Forms.Label,System.Int16,System.Int16)">
+ <summary>
+ Functionality universal to all click events
+ </summary>
+ <param name="tile">tile on visual game that needs to be changed</param>
+ <param name="game">Small game of Tic-Tac-Toe currently being played</param>
+ <param name="vCoord">Vertical coordinate of clicked place on game being played</param>
+ <param name="hCoord">Horizontal coordinate of clicked place on game being played</param>
+ <param name="gameLabel">Label to be set Visible if someone wins or ties the game</param>
+ <param name="gameCoordV">Vertical coordinate of game being played on bigBoard</param>
+ <param name="gameCoordH">Hoorizontal coordinate of game being played on bigBoard</param>
+</member>
+</members>
+</doc>
