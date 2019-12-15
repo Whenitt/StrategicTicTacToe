@@ -5,16 +5,9 @@ Option Strict On : Option Explicit On
 Public Class Game
     'Program to create a strategic tic-tac-toe
     'create boards
+    'Background Board
+    Private backgroundTiles(2, 2, 2, 2) As Short '0=empty, 1=X, 2=O, 3=tie
     Private bigBoard(2, 2) As Short '0=empty, 1=X, 2=O, 3=tie
-    Private game00(2, 2) As Short
-    Private game01(2, 2) As Short
-    Private game02(2, 2) As Short
-    Private game10(2, 2) As Short
-    Private game11(2, 2) As Short
-    Private game12(2, 2) As Short
-    Private game20(2, 2) As Short
-    Private game21(2, 2) As Short
-    Private game22(2, 2) As Short
 
     'Label Arrays
     Private tileLabels(2, 2, 2, 2) As Label
@@ -193,78 +186,132 @@ Public Class Game
             Next
         Next
 
-
+        'Set all games/tiles as incomplete/unassigned
         For i = 0 To 2
             For j = 0 To 2
                 'Internal boards
                 bigBoard(i, j) = 0
-                game00(i, j) = 0
-                game01(i, j) = 0
-                game02(i, j) = 0
-                game10(i, j) = 0
-                game11(i, j) = 0
-                game12(i, j) = 0
-                game20(i, j) = 0
-                game21(i, j) = 0
-                game22(i, j) = 0
+
+                For k = 0 To 2
+                    For l = 0 To 2
+                        backgroundTiles(i, j, k, l) = 0
+                    Next
+                Next
             Next
         Next
     End Sub '---------------------------------------------------------
 
 
     ''' <summary>
-    ''' checks if a player has won on the inputed game and is to be run after every turn
-    ''' Returns 0 if no winner, 1 if winner, 2 if tie
+    ''' if game or board is won, tied, or neither - Returns 1, 2, or 0 respectively
     ''' </summary>
-    ''' <param name="game"></param>
-    ''' <returns>Returns True if the game of Tic-Tac-Toe is won, False otherwise</returns>
-    Private Function CheckWin(game As Short(,)) As Short
+    ''' <param name="isGame">If True: checking a game. If False: checking the bigBoard</param>
+    ''' <param name="vCoordinate">Relevant for games only: Vertical Coordinate of the game</param>
+    ''' <param name="hCoordinate">Relevant for games only: Horizontal Coordinate of the game</param>
+    ''' <returns></returns>
+    Private Function CheckWin(ByVal isGame As Boolean, Optional ByVal vCoordinate As Short = 0, Optional ByVal hCoordinate As Short = 0) As Short
         Dim notFinished As Boolean = False
 
-        'check for vertical and horizontal matches
-        For i = 0 To 2
-            If game(i, 0).Equals(game(i, 1)) And
-                game(i, 0).Equals(game(i, 2)) Then 'horizontal
-                If Not game(i, 0) = 0 Then
-                    Return 1
+        If isGame Then
+            'check for vertical and horizontal matches
+            For i = 0 To 2
+                If backgroundTiles(vCoordinate, hCoordinate, i, 0) = backgroundTiles(vCoordinate, hCoordinate, i, 1) And
+                    backgroundTiles(vCoordinate, hCoordinate, i, 0) = backgroundTiles(vCoordinate, hCoordinate, i, 2) Then
+                    'horizonals match
+                    If Not backgroundTiles(vCoordinate, hCoordinate, i, 0) = 0 Then
+                        Return 1
+                    End If
+                ElseIf backgroundTiles(vCoordinate, hCoordinate, 0, i) = backgroundTiles(vCoordinate, hCoordinate, 1, i) And
+                    backgroundTiles(vCoordinate, hCoordinate, 0, i) = backgroundTiles(vCoordinate, hCoordinate, 2, i) Then
+                    'verticals match
+                    If Not backgroundTiles(vCoordinate, hCoordinate, 0, i) = 0 Then
+                        Return 1
+                    End If
                 End If
-            ElseIf game(0, i).Equals(game(1, i)) And
-                game(0, i).Equals(game(2, i)) Then 'vertical
+            Next
 
-                If Not game(0, i) = 0 Then
+            'check for diagonal matches
+            If (backgroundTiles(vCoordinate, hCoordinate, 0, 0) = backgroundTiles(vCoordinate, hCoordinate, 1, 1) And
+                backgroundTiles(vCoordinate, hCoordinate, 0, 0) = backgroundTiles(vCoordinate, hCoordinate, 2, 2)) Or
+           (backgroundTiles(vCoordinate, hCoordinate, 0, 2) = backgroundTiles(vCoordinate, hCoordinate, 1, 1) And
+           backgroundTiles(vCoordinate, hCoordinate, 0, 2) = backgroundTiles(vCoordinate, hCoordinate, 2, 0)) Then
+                'one of the two diagonals match
+                If Not backgroundTiles(vCoordinate, hCoordinate, 1, 1) = 0 Then
                     Return 1
                 End If
             End If
-        Next
 
-        'check for diagonal matches
-        If (game(0, 0).Equals(game(1, 1)) And game(0, 0).Equals(game(2, 2))) Or
-           (game(0, 2).Equals(game(1, 1)) And game(0, 2).Equals(game(2, 0))) Then
-            If Not game(1, 1) = 0 Then
-                Return 1
-            End If
-        End If
+            'CONFIRMED: Nobody won the game--------------------------------
 
-        'CONFIRMED: WIN STATE = FALSE--------------------------------
+            'check for ties**********************************************
 
-        'check for ties**********************************************
-
-        For i = 0 To 2
-            For j = 0 To 2
-                If game(i, j) = 0 Then
-                    notFinished = True
+            For i = 0 To 2
+                For j = 0 To 2
+                    If backgroundTiles(vCoordinate, hCoordinate, i, j) = 0 Then
+                        notFinished = True
+                        Exit For
+                    End If
+                Next
+                If notFinished Then
                     Exit For
                 End If
             Next
-            If notFinished Then
-                Exit For
-            End If
-        Next
 
-        If notFinished Then
-            Return 0 'not a win, not a tie; therefore nothing happens
+            If notFinished Then
+                Return 0 'not a win, not a tie; therefore nothing happens
+            Else
+                Return 2 'tie has been reached; therefore game should be marked as such
+            End If
         Else
-            Return 2 'tie has been reached; therefore game should be marked as such
+            'check for vertical and horizontal matches
+            For i = 0 To 2
+                If bigBoard(i, 0) = bigBoard(i, 1) And
+                    bigBoard(i, 0) = bigBoard(i, 2) Then
+                    'horizonals match
+                    If Not bigBoard(i, 0) = 0 Then
+                        Return 1
+                    End If
+                ElseIf bigBoard(0, i) = bigBoard(1, i) And
+                    bigBoard(0, i) = bigBoard(2, i) Then
+                    'verticals match
+                    If Not bigBoard(0, i) = 0 Then
+                        Return 1
+                    End If
+                End If
+            Next
+
+            'check for diagonal matches
+            If (bigBoard(0, 0) = bigBoard(1, 1) And
+                bigBoard(0, 0) = bigBoard(2, 2)) Or
+           (bigBoard(0, 2) = bigBoard(1, 1) And
+           bigBoard(0, 2) = bigBoard(2, 0)) Then
+                'one of the two diagonals match
+                If Not bigBoard(1, 1) = 0 Then
+                    Return 1
+                End If
+            End If
+
+            'CONFIRMED: Nobody won the game--------------------------------
+
+            'check for ties**********************************************
+
+            For i = 0 To 2
+                For j = 0 To 2
+                    If bigBoard(i, j) = 0 Then
+                        notFinished = True
+                        Exit For
+                    End If
+                Next
+                If notFinished Then
+                    Exit For
+                End If
+            Next
+
+            If notFinished Then
+                Return 0 'not a win, not a tie; therefore nothing happens
+            Else
+                Return 2 'tie has been reached; therefore game should be marked as such
+            End If
         End If
     End Function '---------------------------------------------------
 
@@ -378,40 +425,53 @@ Public Class Game
     '       otherwise redirect to proper small board
 
     ''' <summary>
-    ''' Functionality universal to all click events
+    ''' Updates boards, checks win, displays win, changes key, and updates notClicked
     ''' </summary>
-    ''' <param name="tile">tile on visual game that needs to be changed</param>
-    ''' <param name="game">Small game of Tic-Tac-Toe currently being played</param>
-    ''' <param name="vCoord">Vertical coordinate of clicked place on game being played</param>
-    ''' <param name="hCoord">Horizontal coordinate of clicked place on game being played</param>
-    ''' <param name="gameLabel">Label to be set Visible if someone wins or ties the game</param>
-    ''' <param name="gameCoordV">Vertical coordinate of game being played on bigBoard</param>
-    ''' <param name="gameCoordH">Hoorizontal coordinate of game being played on bigBoard</param>
-    Private Sub TileClick(tile As Label, game As Short(,), vCoord As Short, hCoord As Short, gameLabel As Label, gameCoordV As Short, gameCoordH As Short)
-        Dim gameWin As Short
-        'change visual and background boards
-        tile.Text = playerXO
-        game(vCoord, hCoord) = playerNum
+    ''' <param name="vCoordinateGame">Verticle Coordinate of the game currently being played on</param>
+    ''' <param name="hCoordinateGame">Horizontal Coordinate of the game currently being played on</param>
+    ''' <param name="vCoordinateTile">Verticle Coordinate of the tile selected</param>
+    ''' <param name="hCoordinateTile">Horizontal Coordinate of the tile selected</param>
+    Private Sub TileClick(ByVal vCoordinateGame As Short, ByVal hCoordinateGame As Short, ByVal vCoordinateTile As Short, ByVal hCoordinateTile As Short)
+        'check if the tile has been clicked on before and if clickKey allows this tile to be cliced
+        If notClicked(vCoordinateGame, hCoordinateGame, vCoordinateTile, hCoordinateTile) And
+                (clickKey = (vCoordinateGame.ToString & "-" & hCoordinateGame.ToString) Or
+                clickKey = "") Then
 
-        'check if the player won/tied game
-        gameWin = CheckWin(game)
+            Dim gameWin As Short
 
-        'if so, update bigboard
-        If gameWin = 1 Then
-            With gameLabel
-                .Text = playerXO
-                .Visible = True
-            End With
-            bigBoard(gameCoordV, gameCoordH) = playerNum
-            'Disable all not clicked tiles in finished game
-            For i = 0 To 2
-                For j = 0 To 2
-                    notClicked(gameCoordV, gameCoordH, i, j) = False
+            'change visual and background boards
+            tileLabels(vCoordinateGame, hCoordinateGame, vCoordinateTile, hCoordinateTile).Text = playerXO
+            backgroundTiles(vCoordinateGame, hCoordinateGame, vCoordinateTile, hCoordinateTile) = playerNum
+
+            'check if the player won/tied game
+            gameWin = CheckWin(True, vCoordinateGame, hCoordinateGame)
+
+            'if the player won, update bigboard
+            If gameWin = 1 Then
+                With gameLabels(vCoordinateGame, hCoordinateGame)
+                    .Text = playerXO
+                    .Visible = True
+                End With
+                bigBoard(vCoordinateGame, hCoordinateGame) = playerNum
+                'Disable all not clicked tiles in finished game
+                For i = 0 To 2
+                    For j = 0 To 2
+                        notClicked(vCoordinateGame, hCoordinateGame, i, j) = False
+                    Next
                 Next
-            Next
 
-            'check for win on bigBoard
-            Dim boardWin As Short = CheckWin(bigBoard)
+                'if the player tied the game, update bigboard
+            ElseIf gameWin = 2 Then
+                'tie on the game
+                With gameLabels(vCoordinateGame, hCoordinateGame)
+                    .Text = "T"
+                    .Visible = True
+                    bigBoard(vCoordinateGame, hCoordinateGame) = 3
+                End With
+            End If
+
+            'check if the player won/tied bigBoard
+            Dim boardWin As Short = CheckWin(False)
             With WinScreen
                 If boardWin = 1 Then
                     'display WinScreen
@@ -426,1316 +486,350 @@ Public Class Game
                     'no win and no tie on game board; the game continues
                 End If
             End With
+            'no win and no tie on game; the game continues
 
-        ElseIf gameWin = 2 Then
-            'tie on the game
-            With gameLabel
-                .Text = "T"
-                .Visible = True
-                bigBoard(gameCoordV, gameCoordH) = 3
-            End With
+            'change the player
+            ChangePlayer()
+
+            'change the clickKey
+            ChangeKey(vCoordinateTile, hCoordinateTile)
+
+            'update notClicked
+            notClicked(vCoordinateGame, hCoordinateGame, vCoordinateTile, hCoordinateTile) = False
         End If
-        'no win and no tie on game; the game continues
-
-        'change the player
-        ChangePlayer()
     End Sub
     '==============================CLICK EVENTS====================================================
     'Big Board: top left---------------------------------------------------------------------------
     Private Sub Tile0000_Click(sender As Object, e As EventArgs) Handles tile0000.Click
-
-        If notClicked(0, 0, 0, 0) And (clickKey = "0-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0000, game00, 0, 0, gameLabel00, 0, 0)
-
-            'redirect to proper game
-            ChangeKey(0, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 0, 0, 0) = False
-
-        End If
+        TileClick(0, 0, 0, 0)
     End Sub
 
     Private Sub Tile0001_Click(sender As Object, e As EventArgs) Handles tile0001.Click
-
-        'if not clicked yet and in correct game
-        If notClicked(0, 0, 0, 1) And (clickKey = "0-0" Or clickKey = "") Then
-            'change games & check wins
-            TileClick(tile0001, game00, 0, 1, gameLabel00, 0, 0)
-
-            'redirect to proper game
-            ChangeKey(0, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 0, 0, 1) = False
-
-        End If
+        TileClick(0, 0, 0, 1)
     End Sub
 
     Private Sub Tile0002_Click(sender As Object, e As EventArgs) Handles tile0002.Click
-
-        'if not clicked yet and in correct game
-        If notClicked(0, 0, 0, 2) And (clickKey = "0-0" Or clickKey = "") Then
-            'change games & check wins
-            TileClick(tile0002, game00, 0, 2, gameLabel00, 0, 0)
-
-            'redirect to proper game
-            ChangeKey(0, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 0, 0, 2) = False
-
-        End If
+        TileClick(0, 0, 0, 2)
     End Sub
 
     Private Sub Tile0010_Click(sender As Object, e As EventArgs) Handles tile0010.Click
-
-        If notClicked(0, 0, 1, 0) And (clickKey = "0-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0010, game00, 1, 0, gameLabel00, 0, 0)
-
-            'redirect to proper game
-            ChangeKey(1, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 0, 1, 0) = False
-
-        End If
+        TileClick(0, 0, 1, 0)
     End Sub
 
     Private Sub Tile0011_Click(sender As Object, e As EventArgs) Handles tile0011.Click
-
-        If notClicked(0, 0, 1, 1) And (clickKey = "0-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0011, game00, 1, 1, gameLabel00, 0, 0)
-
-            'redirect to proper game
-            ChangeKey(1, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 0, 1, 1) = False
-
-        End If
+        TileClick(0, 0, 1, 1)
     End Sub
 
     Private Sub Tile0012_Click(sender As Object, e As EventArgs) Handles tile0012.Click
-
-        If notClicked(0, 0, 1, 2) And (clickKey = "0-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0012, game00, 1, 2, gameLabel00, 0, 0)
-
-            'redirect to proper game
-            ChangeKey(1, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 0, 1, 2) = False
-
-        End If
+        TileClick(0, 0, 1, 2)
     End Sub
 
     Private Sub Tile0020_Click(sender As Object, e As EventArgs) Handles tile0020.Click
-
-        If notClicked(0, 0, 2, 0) And (clickKey = "0-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0020, game00, 2, 0, gameLabel00, 0, 0)
-
-            'redirect to proper game
-            ChangeKey(2, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 0, 2, 0) = False
-
-        End If
+        TileClick(0, 0, 2, 0)
     End Sub
 
     Private Sub Tile0021_Click(sender As Object, e As EventArgs) Handles tile0021.Click
-
-        If notClicked(0, 0, 2, 1) And (clickKey = "0-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0021, game00, 2, 1, gameLabel00, 0, 0)
-
-            'redirect to proper game
-            ChangeKey(2, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 0, 2, 1) = False
-
-        End If
+        TileClick(0, 0, 2, 1)
     End Sub
 
     Private Sub Tile0022_Click(sender As Object, e As EventArgs) Handles tile0022.Click
-
-        If notClicked(0, 0, 2, 2) And (clickKey = "0-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0022, game00, 2, 2, gameLabel00, 0, 0)
-
-            'redirect to proper game
-            ChangeKey(2, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 0, 2, 2) = False
-
-        End If
+        TileClick(0, 0, 2, 2)
     End Sub
 
     'big board: top center-------------------------------------------------------------------------
     Private Sub Tile0100_Click(sender As Object, e As EventArgs) Handles tile0100.Click
-
-        If notClicked(0, 1, 0, 0) And (clickKey = "0-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0100, game01, 0, 0, gameLabel01, 0, 1)
-
-            'redirect to proper game
-            ChangeKey(0, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 1, 0, 0) = False
-
-        End If
+        TileClick(0, 1, 0, 0)
     End Sub
 
     Private Sub Tile0101_Click(sender As Object, e As EventArgs) Handles tile0101.Click
-
-
-        If notClicked(0, 1, 0, 1) And (clickKey = "0-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0101, game01, 0, 1, gameLabel01, 0, 1)
-
-            'redirect to proper game
-            ChangeKey(0, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 1, 0, 1) = False
-
-        End If
+        TileClick(0, 1, 0, 1)
     End Sub
 
     Private Sub Tile0102_Click(sender As Object, e As EventArgs) Handles tile0102.Click
-
-
-        If notClicked(0, 1, 0, 2) And (clickKey = "0-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0102, game01, 0, 2, gameLabel01, 0, 1)
-
-            'redirect to proper game
-            ChangeKey(0, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 1, 0, 2) = False
-
-        End If
+        TileClick(0, 1, 0, 2)
     End Sub
 
     Private Sub Tile0110_Click(sender As Object, e As EventArgs) Handles tile0110.Click
-
-
-        If notClicked(0, 1, 1, 0) And (clickKey = "0-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0110, game01, 1, 0, gameLabel01, 0, 1)
-
-            'redirect to proper game
-            ChangeKey(1, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 1, 1, 0) = False
-
-        End If
+        TileClick(0, 1, 1, 0)
     End Sub
 
     Private Sub Tile0111_Click(sender As Object, e As EventArgs) Handles tile0111.Click
-
-
-        If notClicked(0, 1, 1, 1) And (clickKey = "0-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0111, game01, 1, 1, gameLabel01, 0, 1)
-
-            'redirect to proper game
-            ChangeKey(1, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 1, 1, 1) = False
-
-        End If
+        TileClick(0, 1, 1, 1)
     End Sub
 
     Private Sub Tile0112_Click(sender As Object, e As EventArgs) Handles tile0112.Click
-
-
-        If notClicked(0, 1, 1, 2) And (clickKey = "0-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0112, game01, 1, 2, gameLabel01, 0, 1)
-
-            'redirect to proper game
-            ChangeKey(1, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 1, 1, 2) = False
-
-        End If
+        TileClick(0, 1, 1, 2)
     End Sub
 
     Private Sub Tile0120_Click(sender As Object, e As EventArgs) Handles tile0120.Click
-
-
-        If notClicked(0, 1, 2, 0) And (clickKey = "0-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0120, game01, 2, 0, gameLabel01, 0, 1)
-
-            'redirect to proper game
-            ChangeKey(2, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 1, 2, 0) = False
-
-        End If
+        TileClick(0, 1, 2, 0)
     End Sub
 
     Private Sub Tile0121_Click(sender As Object, e As EventArgs) Handles tile0121.Click
-
-
-        If notClicked(0, 1, 2, 1) And (clickKey = "0-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0121, game01, 2, 1, gameLabel01, 0, 1)
-
-            'redirect to proper game
-            ChangeKey(2, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 1, 2, 1) = False
-
-        End If
+        TileClick(0, 1, 2, 1)
     End Sub
 
     Private Sub Tile0122_Click(sender As Object, e As EventArgs) Handles tile0122.Click
-
-
-        If notClicked(0, 1, 2, 2) And (clickKey = "0-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0122, game01, 2, 2, gameLabel01, 0, 1)
-
-            'redirect to proper game
-            ChangeKey(2, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 1, 2, 2) = False
-
-        End If
+        TileClick(0, 1, 2, 2)
     End Sub
 
     'big board: top right--------------------------------------------------------------------------
     Private Sub Tile0200_Click(sender As Object, e As EventArgs) Handles tile0200.Click
-
-
-        If notClicked(0, 2, 0, 0) And (clickKey = "0-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0200, game02, 0, 0, gameLabel02, 0, 2)
-
-            'redirect to proper game
-            ChangeKey(0, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 2, 0, 0) = False
-
-        End If
+        TileClick(0, 2, 0, 0)
     End Sub
 
     Private Sub Tile0201_Click(sender As Object, e As EventArgs) Handles tile0201.Click
-
-
-        If notClicked(0, 2, 0, 1) And (clickKey = "0-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0201, game02, 0, 1, gameLabel02, 0, 2)
-
-            'redirect to proper game
-            ChangeKey(0, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 2, 0, 1) = False
-
-        End If
+        TileClick(0, 2, 0, 1)
     End Sub
 
     Private Sub Tile0202_Click(sender As Object, e As EventArgs) Handles tile0202.Click
-
-
-        If notClicked(0, 2, 0, 2) And (clickKey = "0-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0202, game02, 0, 2, gameLabel02, 0, 2)
-
-            'redirect to proper game
-            ChangeKey(0, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 2, 0, 2) = False
-
-        End If
+        TileClick(0, 2, 0, 2)
     End Sub
 
     Private Sub Tile0210_Click(sender As Object, e As EventArgs) Handles tile0210.Click
-
-
-        If notClicked(0, 2, 1, 0) And (clickKey = "0-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0210, game02, 1, 0, gameLabel02, 0, 2)
-
-            'redirect to proper game
-            ChangeKey(1, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 2, 1, 0) = False
-
-        End If
+        TileClick(0, 2, 1, 0)
     End Sub
 
     Private Sub Tile0211_Click(sender As Object, e As EventArgs) Handles tile0211.Click
-
-
-        If notClicked(0, 2, 1, 1) And (clickKey = "0-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0211, game02, 1, 1, gameLabel02, 0, 2)
-
-            'redirect to proper game
-            ChangeKey(1, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 2, 1, 1) = False
-
-        End If
+        TileClick(0, 2, 1, 1)
     End Sub
 
     Private Sub Tile0212_Click(sender As Object, e As EventArgs) Handles tile0212.Click
-
-
-        If notClicked(0, 2, 1, 2) And (clickKey = "0-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0212, game02, 1, 2, gameLabel02, 0, 2)
-
-            'redirect to proper game
-            ChangeKey(1, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 2, 1, 2) = False
-
-        End If
+        TileClick(0, 2, 1, 2)
     End Sub
 
     Private Sub Tile0220_Click(sender As Object, e As EventArgs) Handles tile0220.Click
-
-
-        If notClicked(0, 2, 2, 0) And (clickKey = "0-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0220, game02, 2, 0, gameLabel02, 0, 2)
-
-            'redirect to proper game
-            ChangeKey(2, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 2, 2, 0) = False
-
-        End If
+        TileClick(0, 2, 2, 0)
     End Sub
 
     Private Sub Tile0221_Click(sender As Object, e As EventArgs) Handles tile0221.Click
-
-
-        If notClicked(0, 2, 2, 1) And (clickKey = "0-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0221, game02, 2, 1, gameLabel02, 0, 2)
-
-            'redirect to proper game
-            ChangeKey(2, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 2, 2, 1) = False
-
-        End If
+        TileClick(0, 2, 2, 1)
     End Sub
 
     Private Sub Tile0222_Click(sender As Object, e As EventArgs) Handles tile0222.Click
-
-
-        If notClicked(0, 2, 2, 2) And (clickKey = "0-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile0222, game02, 2, 2, gameLabel02, 0, 2)
-
-            'redirect to proper game
-            ChangeKey(2, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(0, 2, 2, 2) = False
-
-        End If
+        TileClick(0, 2, 2, 2)
     End Sub
 
     'big board: mid left---------------------------------------------------------------------------
     Private Sub Tile1000_Click(sender As Object, e As EventArgs) Handles tile1000.Click
-
-
-        If notClicked(1, 0, 0, 0) And (clickKey = "1-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1000, game10, 0, 0, gameLabel10, 1, 0)
-
-            'redirect to proper game
-            ChangeKey(0, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 0, 0, 0) = False
-
-        End If
+        TileClick(1, 0, 0, 0)
     End Sub
 
     Private Sub Tile1001_Click(sender As Object, e As EventArgs) Handles tile1001.Click
-
-
-        If notClicked(1, 0, 0, 1) And (clickKey = "1-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1001, game10, 0, 1, gameLabel10, 1, 0)
-
-            'redirect to proper game
-            ChangeKey(0, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 0, 0, 1) = False
-
-        End If
+        TileClick(1, 0, 0, 1)
     End Sub
 
     Private Sub Tile1002_Click(sender As Object, e As EventArgs) Handles tile1002.Click
-
-
-        If notClicked(1, 0, 0, 2) And (clickKey = "1-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1002, game10, 0, 2, gameLabel10, 1, 0)
-
-            'redirect to proper game
-            ChangeKey(0, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 0, 0, 2) = False
-
-        End If
+        TileClick(1, 0, 0, 2)
     End Sub
 
     Private Sub Tile1010_Click(sender As Object, e As EventArgs) Handles tile1010.Click
-
-
-        If notClicked(1, 0, 1, 0) And (clickKey = "1-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1010, game10, 1, 0, gameLabel10, 1, 0)
-
-            'redirect to proper game
-            ChangeKey(1, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 0, 1, 0) = False
-
-        End If
+        TileClick(1, 0, 1, 0)
     End Sub
 
     Private Sub Tile1011_Click(sender As Object, e As EventArgs) Handles tile1011.Click
-
-
-        If notClicked(1, 0, 1, 1) And (clickKey = "1-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1011, game10, 1, 1, gameLabel10, 1, 0)
-
-            'redirect to proper game
-            ChangeKey(1, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 0, 1, 1) = False
-
-        End If
+        TileClick(1, 0, 1, 1)
     End Sub
 
     Private Sub Tile1012_Click(sender As Object, e As EventArgs) Handles tile1012.Click
-
-
-        If notClicked(1, 0, 1, 2) And (clickKey = "1-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1012, game10, 1, 2, gameLabel10, 1, 0)
-
-            'redirect to proper game
-            ChangeKey(1, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 0, 1, 2) = False
-
-        End If
+        TileClick(1, 0, 1, 2)
     End Sub
 
     Private Sub Tile1020_Click(sender As Object, e As EventArgs) Handles tile1020.Click
-
-
-        If notClicked(1, 0, 2, 0) And (clickKey = "1-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1020, game10, 2, 0, gameLabel10, 1, 0)
-
-            'redirect to proper game
-            ChangeKey(2, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 0, 2, 0) = False
-
-        End If
+        TileClick(1, 0, 2, 0)
     End Sub
 
     Private Sub Tile1021_Click(sender As Object, e As EventArgs) Handles tile1021.Click
-
-
-        If notClicked(1, 0, 2, 1) And (clickKey = "1-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1021, game10, 2, 1, gameLabel10, 1, 0)
-
-            'redirect to proper game
-            ChangeKey(2, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 0, 2, 1) = False
-
-        End If
+        TileClick(1, 0, 2, 1)
     End Sub
 
     Private Sub Tile1022_Click(sender As Object, e As EventArgs) Handles tile1022.Click
-
-
-        If notClicked(1, 0, 2, 2) And (clickKey = "1-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1022, game10, 2, 2, gameLabel10, 1, 0)
-
-            'redirect to proper game
-            ChangeKey(2, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 0, 2, 2) = False
-
-        End If
+        TileClick(1, 0, 2, 2)
     End Sub
 
     'big board: mid center-------------------------------------------------------------------------
     Private Sub Tile1100_Click(sender As Object, e As EventArgs) Handles tile1100.Click
-
-
-        If notClicked(1, 1, 0, 0) And (clickKey = "1-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1100, game11, 0, 0, gameLabel11, 1, 1)
-
-            'redirect to proper game
-            ChangeKey(0, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 1, 0, 0) = False
-
-        End If
+        TileClick(1, 1, 0, 0)
     End Sub
 
     Private Sub Tile1101_Click(sender As Object, e As EventArgs) Handles tile1101.Click
-
-
-        If notClicked(1, 1, 0, 1) And (clickKey = "1-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1101, game11, 0, 1, gameLabel11, 1, 1)
-
-            'redirect to proper game
-            ChangeKey(0, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 1, 0, 1) = False
-
-        End If
+        TileClick(1, 1, 0, 1)
     End Sub
 
     Private Sub Tile1102_Click(sender As Object, e As EventArgs) Handles tile1102.Click
-
-
-        If notClicked(1, 1, 0, 2) And (clickKey = "1-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1102, game11, 0, 2, gameLabel11, 1, 1)
-
-            'redirect to proper game
-            ChangeKey(0, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 1, 0, 2) = False
-
-        End If
+        TileClick(1, 1, 0, 2)
     End Sub
 
     Private Sub Tile1110_Click(sender As Object, e As EventArgs) Handles tile1110.Click
-
-
-        If notClicked(1, 1, 1, 0) And (clickKey = "1-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1110, game11, 1, 0, gameLabel11, 1, 1)
-
-            'redirect to proper game
-            ChangeKey(1, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 1, 1, 0) = False
-
-        End If
+        TileClick(1, 1, 1, 0)
     End Sub
 
     Private Sub Tile1111_Click(sender As Object, e As EventArgs) Handles tile1111.Click
-
-
-        If notClicked(1, 1, 1, 1) And (clickKey = "1-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1111, game11, 1, 1, gameLabel11, 1, 1)
-
-            'redirect to proper game
-            ChangeKey(1, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 1, 1, 1) = False
-
-        End If
+        TileClick(1, 1, 1, 1)
     End Sub
 
     Private Sub Tile1112_Click(sender As Object, e As EventArgs) Handles tile1112.Click
-
-
-        If notClicked(1, 1, 1, 2) And (clickKey = "1-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1112, game11, 1, 2, gameLabel11, 1, 1)
-
-            'redirect to proper game
-            ChangeKey(1, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 1, 1, 2) = False
-
-        End If
+        TileClick(1, 1, 1, 2)
     End Sub
 
     Private Sub Tile1120_Click(sender As Object, e As EventArgs) Handles tile1120.Click
-
-
-        If notClicked(1, 1, 2, 0) And (clickKey = "1-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1120, game11, 2, 0, gameLabel11, 1, 1)
-
-            'redirect to proper game
-            ChangeKey(2, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 1, 2, 0) = False
-
-        End If
+        TileClick(1, 1, 2, 0)
     End Sub
 
     Private Sub Tile1121_Click(sender As Object, e As EventArgs) Handles tile1121.Click
-
-
-        If notClicked(1, 1, 2, 1) And (clickKey = "1-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1121, game11, 2, 1, gameLabel11, 1, 1)
-
-            'redirect to proper game
-            ChangeKey(2, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 1, 2, 1) = False
-
-        End If
+        TileClick(1, 1, 2, 1)
     End Sub
 
     Private Sub Tile1122_Click(sender As Object, e As EventArgs) Handles tile1122.Click
-
-
-        If notClicked(1, 1, 2, 2) And (clickKey = "1-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1122, game11, 2, 2, gameLabel11, 1, 1)
-
-            'redirect to proper game
-            ChangeKey(2, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 1, 2, 2) = False
-
-        End If
+        TileClick(1, 1, 2, 2)
     End Sub
 
     'big board: mid right--------------------------------------------------------------------------
     Private Sub Tile1200_Click(sender As Object, e As EventArgs) Handles tile1200.Click
-
-
-        If notClicked(1, 2, 0, 0) And (clickKey = "1-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1200, game12, 0, 0, gameLabel12, 1, 2)
-
-            'redirect to proper game
-            ChangeKey(0, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 2, 0, 0) = False
-
-        End If
+        TileClick(1, 2, 0, 0)
     End Sub
 
     Private Sub Tile1201_Click(sender As Object, e As EventArgs) Handles tile1201.Click
-
-
-        If notClicked(1, 2, 0, 1) And (clickKey = "1-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1201, game12, 0, 1, gameLabel12, 1, 2)
-
-            'redirect to proper game
-            ChangeKey(0, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 2, 0, 1) = False
-
-        End If
+        TileClick(1, 2, 1, 1)
     End Sub
 
     Private Sub Tile1202_Click(sender As Object, e As EventArgs) Handles tile1202.Click
-
-
-        If notClicked(1, 2, 0, 2) And (clickKey = "1-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1202, game12, 0, 2, gameLabel12, 1, 2)
-
-            'redirect to proper game
-            ChangeKey(0, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 2, 0, 2) = False
-
-        End If
+        TileClick(1, 2, 1, 2)
     End Sub
 
     Private Sub Tile1210_Click(sender As Object, e As EventArgs) Handles tile1210.Click
-
-
-        If notClicked(1, 2, 1, 0) And (clickKey = "1-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1210, game12, 1, 0, gameLabel12, 1, 2)
-
-            'redirect to proper game
-            ChangeKey(1, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 2, 1, 0) = False
-
-        End If
+        TileClick(1, 2, 1, 0)
     End Sub
 
     Private Sub Tile1211_Click(sender As Object, e As EventArgs) Handles tile1211.Click
-
-
-        If notClicked(1, 2, 1, 1) And (clickKey = "1-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1211, game12, 1, 1, gameLabel12, 1, 2)
-
-            'redirect to proper game
-            ChangeKey(1, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 2, 1, 1) = False
-
-        End If
+        TileClick(1, 2, 1, 1)
     End Sub
 
     Private Sub Tile1212_Click(sender As Object, e As EventArgs) Handles tile1212.Click
-
-
-        If notClicked(1, 2, 1, 2) And (clickKey = "1-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1212, game12, 1, 2, gameLabel12, 1, 2)
-
-            'redirect to proper game
-            ChangeKey(1, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 2, 1, 2) = False
-
-        End If
+        TileClick(1, 2, 1, 2)
     End Sub
 
     Private Sub Tile1220_Click(sender As Object, e As EventArgs) Handles tile1220.Click
-
-
-        If notClicked(1, 2, 2, 0) And (clickKey = "1-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1220, game12, 2, 0, gameLabel12, 1, 2)
-
-            'redirect to proper game
-            ChangeKey(2, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 2, 2, 0) = False
-
-        End If
+        TileClick(1, 2, 2, 0)
     End Sub
 
     Private Sub Tile1221_Click(sender As Object, e As EventArgs) Handles tile1221.Click
-
-
-        If notClicked(1, 2, 2, 1) And (clickKey = "1-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1221, game12, 2, 1, gameLabel12, 1, 2)
-
-            'redirect to proper game
-            ChangeKey(2, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 2, 2, 1) = False
-
-        End If
+        TileClick(1, 2, 2, 1)
     End Sub
 
     Private Sub Tile1222_Click(sender As Object, e As EventArgs) Handles tile1222.Click
-
-
-        If notClicked(1, 2, 2, 2) And (clickKey = "1-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile1222, game12, 2, 2, gameLabel12, 1, 2)
-
-            'redirect to proper game
-            ChangeKey(2, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(1, 2, 2, 2) = False
-
-        End If
+        TileClick(1, 2, 2, 2)
     End Sub
 
     'big board: bottom left------------------------------------------------------------------------
     Private Sub Tile2000_Click(sender As Object, e As EventArgs) Handles tile2000.Click
-
-
-        If notClicked(2, 0, 0, 0) And (clickKey = "2-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2000, game20, 0, 0, gameLabel20, 2, 0)
-
-            'redirect to proper game
-            ChangeKey(0, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 0, 0, 0) = False
-
-        End If
+        TileClick(2, 0, 0, 0)
     End Sub
 
     Private Sub Tile2001_Click(sender As Object, e As EventArgs) Handles tile2001.Click
-
-
-        If notClicked(2, 0, 0, 1) And (clickKey = "2-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2001, game20, 0, 1, gameLabel20, 2, 0)
-
-            'redirect to proper game
-            ChangeKey(0, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 0, 0, 1) = False
-
-        End If
+        TileClick(2, 0, 0, 1)
     End Sub
 
     Private Sub Tile2002_Click(sender As Object, e As EventArgs) Handles tile2002.Click
-
-
-        If notClicked(2, 0, 0, 2) And (clickKey = "2-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2002, game20, 0, 2, gameLabel20, 2, 0)
-
-            'redirect to proper game
-            ChangeKey(0, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 0, 0, 2) = False
-
-        End If
+        TileClick(2, 0, 0, 2)
     End Sub
 
     Private Sub Tile2010_Click(sender As Object, e As EventArgs) Handles tile2010.Click
-
-
-        If notClicked(2, 0, 1, 0) And (clickKey = "2-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2010, game20, 1, 0, gameLabel20, 2, 0)
-
-            'redirect to proper game
-            ChangeKey(1, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 0, 1, 0) = False
-
-        End If
+        TileClick(2, 0, 1, 0)
     End Sub
 
     Private Sub Tile2011_Click(sender As Object, e As EventArgs) Handles tile2011.Click
-
-
-        If notClicked(2, 0, 1, 1) And (clickKey = "2-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2011, game20, 1, 1, gameLabel20, 2, 0)
-
-            'redirect to proper game
-            ChangeKey(1, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 0, 1, 1) = False
-
-        End If
+        TileClick(2, 0, 1, 1)
     End Sub
 
     Private Sub Tile2012_Click(sender As Object, e As EventArgs) Handles tile2012.Click
-
-
-        If notClicked(2, 0, 1, 2) And (clickKey = "2-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2012, game20, 1, 2, gameLabel20, 2, 0)
-
-            'redirect to proper game
-            ChangeKey(1, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 0, 1, 2) = False
-
-        End If
+        TileClick(2, 0, 1, 2)
     End Sub
 
     Private Sub Tile2020_Click(sender As Object, e As EventArgs) Handles tile2020.Click
-
-
-        If notClicked(2, 0, 2, 0) And (clickKey = "2-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2020, game20, 2, 0, gameLabel20, 2, 0)
-
-            'redirect to proper game
-            ChangeKey(2, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 0, 2, 0) = False
-
-        End If
+        TileClick(2, 0, 2, 0)
     End Sub
 
     Private Sub Tile2021_Click(sender As Object, e As EventArgs) Handles tile2021.Click
-
-
-        If notClicked(2, 0, 2, 1) And (clickKey = "2-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2021, game20, 2, 1, gameLabel20, 2, 0)
-
-            'redirect to proper game
-            ChangeKey(2, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 0, 2, 1) = False
-
-        End If
+        TileClick(2, 0, 2, 1)
     End Sub
 
     Private Sub Tile2022_Click(sender As Object, e As EventArgs) Handles tile2022.Click
-
-
-        If notClicked(2, 0, 2, 2) And (clickKey = "2-0" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2022, game20, 2, 2, gameLabel20, 2, 0)
-
-            'redirect to proper game
-            ChangeKey(2, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 0, 2, 2) = False
-
-        End If
+        TileClick(2, 0, 2, 2)
     End Sub
 
     'big board: bottom center----------------------------------------------------------------------
     Private Sub Tile2100_Click(sender As Object, e As EventArgs) Handles tile2100.Click
-
-
-        If notClicked(2, 1, 0, 0) And (clickKey = "2-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2100, game21, 0, 0, gameLabel21, 2, 1)
-
-            'redirect to proper game
-            ChangeKey(0, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 1, 0, 0) = False
-
-        End If
+        TileClick(2, 1, 0, 0)
     End Sub
 
     Private Sub Tile2101_Click(sender As Object, e As EventArgs) Handles tile2101.Click
-
-
-        If notClicked(2, 1, 0, 1) And (clickKey = "2-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2101, game21, 0, 1, gameLabel21, 2, 1)
-
-            'redirect to proper game
-            ChangeKey(0, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 1, 0, 1) = False
-
-        End If
+        TileClick(2, 1, 0, 1)
     End Sub
 
     Private Sub Tile2102_Click(sender As Object, e As EventArgs) Handles tile2102.Click
-
-
-        If notClicked(2, 1, 0, 2) And (clickKey = "2-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2102, game21, 0, 2, gameLabel21, 2, 1)
-
-            'redirect to proper game
-            ChangeKey(0, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 1, 0, 2) = False
-
-        End If
+        TileClick(2, 1, 0, 2)
     End Sub
 
     Private Sub Tile2110_Click(sender As Object, e As EventArgs) Handles tile2110.Click
-
-
-        If notClicked(2, 1, 1, 0) And (clickKey = "2-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2110, game21, 1, 0, gameLabel21, 2, 1)
-
-            'redirect to proper game
-            ChangeKey(1, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 1, 1, 0) = False
-
-        End If
+        TileClick(2, 1, 1, 0)
     End Sub
 
     Private Sub Tile2111_Click(sender As Object, e As EventArgs) Handles tile2111.Click
-
-
-        If notClicked(2, 1, 1, 1) And (clickKey = "2-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2111, game21, 1, 1, gameLabel21, 2, 1)
-
-            'redirect to proper game
-            ChangeKey(1, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 1, 1, 1) = False
-
-        End If
+        TileClick(2, 1, 1, 1)
     End Sub
 
     Private Sub Tile2112_Click(sender As Object, e As EventArgs) Handles tile2112.Click
-
-
-        If notClicked(2, 1, 1, 2) And (clickKey = "2-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2112, game21, 1, 2, gameLabel21, 2, 1)
-
-            'redirect to proper game
-            ChangeKey(1, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 1, 1, 2) = False
-
-        End If
+        TileClick(2, 1, 1, 2)
     End Sub
 
     Private Sub Tile2120_Click(sender As Object, e As EventArgs) Handles tile2120.Click
-
-
-        If notClicked(2, 1, 2, 0) And (clickKey = "2-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2120, game21, 2, 0, gameLabel21, 2, 1)
-
-            'redirect to proper game
-            ChangeKey(2, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 1, 2, 0) = False
-
-        End If
+        TileClick(2, 1, 2, 0)
     End Sub
 
     Private Sub Tile2121_Click(sender As Object, e As EventArgs) Handles tile2121.Click
-
-
-        If notClicked(2, 1, 2, 1) And (clickKey = "2-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2121, game21, 2, 1, gameLabel21, 2, 1)
-
-            'redirect to proper game
-            ChangeKey(2, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 1, 2, 1) = False
-
-        End If
+        TileClick(2, 1, 2, 1)
     End Sub
 
     Private Sub Tile2122_Click(sender As Object, e As EventArgs) Handles tile2122.Click
-
-
-        If notClicked(2, 1, 2, 2) And (clickKey = "2-1" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2122, game21, 2, 2, gameLabel21, 2, 1)
-
-            'redirect to proper game
-            ChangeKey(2, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 1, 2, 2) = False
-
-        End If
+        TileClick(2, 1, 2, 2)
     End Sub
 
     'big board: bottom right-----------------------------------------------------------------------
     Private Sub Tile2200_Click(sender As Object, e As EventArgs) Handles tile2200.Click
-
-
-        If notClicked(2, 2, 0, 0) And (clickKey = "2-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2200, game22, 0, 0, gameLabel22, 2, 2)
-
-            'redirect to proper game
-            ChangeKey(0, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 2, 0, 0) = False
-
-        End If
+        TileClick(2, 2, 0, 0)
     End Sub
 
     Private Sub Tile2201_Click(sender As Object, e As EventArgs) Handles tile2201.Click
-
-
-        If notClicked(2, 2, 0, 1) And (clickKey = "2-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2201, game22, 0, 1, gameLabel22, 2, 2)
-
-            'redirect to proper game
-            ChangeKey(0, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 2, 0, 1) = False
-
-        End If
+        TileClick(2, 2, 0, 1)
     End Sub
 
     Private Sub Tile2202_Click(sender As Object, e As EventArgs) Handles tile2202.Click
-
-
-        If notClicked(2, 2, 0, 2) And (clickKey = "2-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2202, game22, 0, 2, gameLabel22, 2, 2)
-
-            'redirect to proper game
-            ChangeKey(0, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 2, 0, 2) = False
-
-        End If
+        TileClick(2, 2, 0, 2)
     End Sub
 
     Private Sub Tile2210_Click(sender As Object, e As EventArgs) Handles tile2210.Click
-
-
-        If notClicked(2, 2, 1, 0) And (clickKey = "2-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2210, game22, 1, 0, gameLabel22, 2, 2)
-
-            'redirect to proper game
-            ChangeKey(1, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 2, 1, 0) = False
-
-        End If
+        TileClick(2, 2, 1, 0)
     End Sub
 
     Private Sub Tile2211_Click(sender As Object, e As EventArgs) Handles tile2211.Click
-
-
-        If notClicked(2, 2, 1, 1) And (clickKey = "2-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2211, game22, 1, 1, gameLabel22, 2, 2)
-
-            'redirect to proper game
-            ChangeKey(1, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 2, 1, 1) = False
-
-        End If
+        TileClick(2, 2, 1, 1)
     End Sub
 
     Private Sub Tile2212_Click(sender As Object, e As EventArgs) Handles tile2212.Click
-
-
-        If notClicked(2, 2, 1, 2) And (clickKey = "2-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2212, game22, 1, 2, gameLabel22, 2, 2)
-
-            'redirect to proper game
-            ChangeKey(1, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 2, 1, 2) = False
-
-        End If
+        TileClick(2, 2, 1, 2)
     End Sub
 
     Private Sub Tile2220_Click(sender As Object, e As EventArgs) Handles tile2220.Click
-
-
-        If notClicked(2, 2, 2, 0) And (clickKey = "2-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2220, game22, 2, 0, gameLabel22, 2, 2)
-
-            'redirect to proper game
-            ChangeKey(2, 0)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 2, 2, 0) = False
-
-        End If
+        TileClick(2, 2, 2, 0)
     End Sub
 
     Private Sub Tile2221_Click(sender As Object, e As EventArgs) Handles tile2221.Click
-
-
-        If notClicked(2, 2, 2, 1) And (clickKey = "2-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2221, game22, 2, 1, gameLabel22, 2, 2)
-
-            'redirect to proper game
-            ChangeKey(2, 1)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 2, 2, 1) = False
-
-        End If
+        TileClick(2, 2, 2, 1)
     End Sub
 
     Private Sub Tile2222_Click(sender As Object, e As EventArgs) Handles tile2222.Click
-
-
-        If notClicked(2, 2, 2, 2) And (clickKey = "2-2" Or clickKey = "") Then
-            'change boards & check wins
-            TileClick(tile2222, game22, 2, 2, gameLabel22, 2, 2)
-
-            'redirect to proper game
-            ChangeKey(2, 2)
-
-            'ensure this spot cannot be clicked again
-            notClicked(2, 2, 2, 2) = False
-
-        End If
+        TileClick(2, 2, 2, 2)
     End Sub
     '============================================================================================================================
 End Class
