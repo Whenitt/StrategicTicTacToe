@@ -1,0 +1,90 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+StratTicTacToe
+</name>
+</assembly>
+<members>
+<member name="T:StratTicTacToe.My.Resources.Resources">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:StratTicTacToe.My.Resources.Resources.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:StratTicTacToe.My.Resources.Resources.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="M:StratTicTacToe.Game.ClearAll">
+ <summary>
+ set all boards to empty, allow players to click on any tile, and set the player to "X"
+ 0=empty,1=x,2=0
+ </summary>
+</member>
+<member name="M:StratTicTacToe.Game.CheckWin(System.Boolean,System.Int16,System.Int16)">
+ <summary>
+ if game or board is won, tied, or neither - Returns 1, 2, or 0 respectively
+ </summary>
+ <param name="isGame">If True: checking a game. If False: checking the bigBoard</param>
+ <param name="vCoordinate">Relevant for games only: Vertical Coordinate of the game</param>
+ <param name="hCoordinate">Relevant for games only: Horizontal Coordinate of the game</param>
+ <returns></returns>
+</member>
+<member name="M:StratTicTacToe.Game.ChangePlayer">
+ <summary>
+ changes information to identify which player's turn it is
+ </summary>
+</member>
+<member name="M:StratTicTacToe.Game.ChangeKey(System.Int16,System.Int16)">
+ <summary>
+ changes clickKey to give access to certain tiles
+ clickKey is coordinates of the game on the bigBoard
+ </summary>
+ <param name="gameNumV">Vertical coordinate for the game being redirected to</param>
+ <param name="gameNumH">Horizontal coordinate for the game being redirected to</param>
+</member>
+<member name="M:StratTicTacToe.Game.ClearHighlights">
+ <summary>
+ Clears  highlights on all game
+ </summary>
+</member>
+<member name="M:StratTicTacToe.Game.DisplayHighlight(System.Int32,System.Int32)">
+ <summary>
+ Displays highlights for specified game
+ </summary>
+ <param name="gameNumV">Vertical coordinate of game being highlighted</param>
+ <param name="gameNumH">Horizontal coordinate of game being highlighted</param>
+</member>
+<member name="M:StratTicTacToe.Game.TileClick(System.Int16,System.Int16,System.Int16,System.Int16)">
+ <summary>
+ Updates boards, checks win, displays win, changes key, and updates notClicked
+ </summary>
+ <param name="vCoordinateGame">Verticle Coordinate of the game currently being played on</param>
+ <param name="hCoordinateGame">Horizontal Coordinate of the game currently being played on</param>
+ <param name="vCoordinateTile">Verticle Coordinate of the tile selected</param>
+ <param name="hCoordinateTile">Horizontal Coordinate of the tile selected</param>
+</member>
+<member name="M:StratTicTacToe.MainMenu.twoPlayerButton_Click(System.Object,System.EventArgs)">
+ <summary>
+ Starts the game for two people to play
+ </summary>
+</member>
+<member name="M:StratTicTacToe.MainMenu.singlePlayerButton_Click(System.Object,System.EventArgs)">
+ <summary>
+ Brings up difficulty selection and gets rid of everything else
+ </summary>
+</member>
+<member name="M:StratTicTacToe.MainMenu.backButton_Click(System.Object,System.EventArgs)">
+ <summary>
+ Opposite functionality as singlePlayerButton
+ </summary>
+</member>
+</members>
+</doc>
